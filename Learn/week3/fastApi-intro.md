@@ -23,7 +23,7 @@ cd my-first-api
 ### Step 2: Create Virtual Environment
 
 **Why virtual environment?**
-- Keeps this project's packages separate from other project
+- Keeps this project's packages separate from other project 
 - Prevents version conflicts
 - Industry standard practice
 
