@@ -11,6 +11,7 @@ on:
           - week3
           - week4
           - week5
+          - all
       image_tag:
         description: 'Tag for the Docker image (e.g., v1.0, latest)'
         required: true
@@ -18,8 +19,25 @@ on:
         type: string
 
 jobs:
-  docker-build-push:
+  prepare:
     runs-on: ubuntu-latest
+    outputs:
+      directories: ${{ steps.set-dirs.outputs.directories }}
+    steps:
+      - id: set-dirs
+        run: |
+          if [ "${{ github.event.inputs.directory }}" = "all" ]; then
+            echo 'directories=["week3", "week4", "week5"]' >> $GITHUB_OUTPUT
+          else
+            echo 'directories=["${{ github.event.inputs.directory }}"]' >> $GITHUB_OUTPUT
+          fi
+
+  docker-build-push:
+    needs: prepare
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        directory: ${{ fromJson(needs.prepare.outputs.directories) }}
     permissions:
       contents: read
       packages: write
@@ -46,9 +64,9 @@ jobs:
       - name: Build and Push
         uses: docker/build-push-action@v6
         with:
-          context: ./Learn/${{ github.event.inputs.directory }}
-          file: ./Learn/${{ github.event.inputs.directory }}/Dockerfile
+          context: ./Learn/${{ matrix.directory }}
+          file: ./Learn/${{ matrix.directory }}/Dockerfile
           push: true
           tags: |
-            ghcr.io/${{ steps.prep.outputs.OWNER_LOWERCASE }}/playground-${{ github.event.inputs.directory }}:${{ github.event.inputs.image_tag }}
-            ghcr.io/${{ steps.prep.outputs.OWNER_LOWERCASE }}/playground-${{ github.event.inputs.directory }}:latest
+            ghcr.io/${{ steps.prep.outputs.OWNER_LOWERCASE }}/playground-${{ matrix.directory }}:${{ github.event.inputs.image_tag }}
+            ghcr.io/${{ steps.prep.outputs.OWNER_LOWERCASE }}/playground-${{ matrix.directory }}:latest
