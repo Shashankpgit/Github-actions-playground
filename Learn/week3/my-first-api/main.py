@@ -117,7 +117,7 @@ def circle_calculations(radius: float):
 
 @app.get("/temperature/{celsius}")
 def temperature_conversion(celsius: float):
-    """Convert Celsius to Fahrenheit"""
+    """Convert Celsius to Fahrenheits"""
     fahrenheit = (celsius * 9/5) + 32
     return {
         "celsius": celsius,
