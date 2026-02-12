@@ -14,7 +14,7 @@
 
 In Week 3, you only used **GET** requests. Let's understand why we need other methods.
 
-#### GET Requests (What You've Been Using)
+#### GET Requests (What You've Been Using) 
 
 ```python
 @app.get("/users")

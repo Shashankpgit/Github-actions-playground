@@ -55,11 +55,13 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Lowercase repository owner
+      - name: Lowercase repository owner and generate tag
         id: prep
         run: |
           echo "OWNER_LOWERCASE=${GITHUB_REPOSITORY_OWNER,,}" >> $GITHUB_OUTPUT
-          echo "IMAGE_TAG=${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
+          # Format: <branch-name>_<short-sha>, lowercased
+          RAW_TAG="${{ github.ref_name }}_${GITHUB_SHA::7}"
+          echo "IMAGE_TAG=$(echo $RAW_TAG | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
 
       - name: Build and Push
         uses: docker/build-push-action@v6
