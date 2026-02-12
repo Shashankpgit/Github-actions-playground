@@ -40,7 +40,7 @@ def create_todo(todo: TodoCreate):
     todos_db.append(todo)  # Stored in RAM
     return todo
 
-# Problem: When you restart server...
+# Problem: When you restart server....
 # todos_db = []  # ALL DATA IS GONE! 💥
 ```
 

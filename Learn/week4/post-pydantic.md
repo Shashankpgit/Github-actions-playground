@@ -27,7 +27,7 @@ def get_users():
 - **Data location**: URL (query parameters)
 - **Visible**: Data shows in browser address bar
 - **Cacheable**: Browser can cache results
-- **Idempotent**: Calling it multiple times = same result
+- **Idempotent**: Calling it multiple times = same result 
 - **Should NOT modify data**: Only reads
 
 **Real-world example:**
