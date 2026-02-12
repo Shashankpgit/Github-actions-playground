@@ -10,7 +10,7 @@
 
 ## Part 1: Understanding HTTP Methods in Depth
 
-### GET vs POST - The Fundamental Difference
+### GET vs POST - The Fundamental Difference.
 
 In Week 3, you only used **GET** requests. Let's understand why we need other methods.
 
