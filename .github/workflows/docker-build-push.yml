@@ -1,6 +1,11 @@
 name: Build and Push Docker Image
 
 on:
+  push:
+    paths:
+      - 'Learn/week3/**'
+      - 'Learn/week4/**'
+      - 'Learn/week5/**'
   workflow_dispatch:
     inputs:
       directory:
@@ -24,12 +29,37 @@ jobs:
     outputs:
       directories: ${{ steps.set-dirs.outputs.directories }}
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Check changed directories
+        id: filter
+        if: github.event_name == 'push'
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            week3: 'Learn/week3/**'
+            week4: 'Learn/week4/**'
+            week5: 'Learn/week5/**'
+
       - id: set-dirs
         run: |
-          if [ "${{ github.event.inputs.directory }}" = "all" ]; then
-            echo 'directories=["week3", "week4", "week5"]' >> $GITHUB_OUTPUT
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            if [ "${{ github.event.inputs.directory }}" = "all" ]; then
+              echo 'directories=["week3", "week4", "week5"]' >> $GITHUB_OUTPUT
+            else
+              echo 'directories=["${{ github.event.inputs.directory }}"]' >> $GITHUB_OUTPUT
+            fi
           else
-            echo 'directories=["${{ github.event.inputs.directory }}"]' >> $GITHUB_OUTPUT
+            # For push events, build array based on filter results
+            DIRS=()
+            if [ "${{ steps.filter.outputs.week3 }}" = "true" ]; then DIRS+=("\"week3\""); fi
+            if [ "${{ steps.filter.outputs.week4 }}" = "true" ]; then DIRS+=("\"week4\""); fi
+            if [ "${{ steps.filter.outputs.week5 }}" = "true" ]; then DIRS+=("\"week5\""); fi
+            
+            # Join array with commas and wrap in brackets
+            JSON_DIRS=$(IFS=,; echo "[${DIRS[*]}]")
+            echo "directories=$JSON_DIRS" >> $GITHUB_OUTPUT
           fi
 
   docker-build-push:
