@@ -90,6 +90,11 @@ jobs:
         id: prep
         run: |
           echo "OWNER_LOWERCASE=${GITHUB_REPOSITORY_OWNER,,}" >> $GITHUB_OUTPUT
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "IMAGE_TAG=${{ github.event.inputs.image_tag }}" >> $GITHUB_OUTPUT
+          else
+            echo "IMAGE_TAG=${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
+          fi
 
       - name: Build and Push
         uses: docker/build-push-action@v6
@@ -98,5 +103,5 @@ jobs:
           file: ./Learn/${{ matrix.directory }}/Dockerfile
           push: true
           tags: |
-            ghcr.io/${{ steps.prep.outputs.OWNER_LOWERCASE }}/playground-${{ matrix.directory }}:${{ github.event.inputs.image_tag }}
+            ghcr.io/${{ steps.prep.outputs.OWNER_LOWERCASE }}/playground-${{ matrix.directory }}:${{ steps.prep.outputs.IMAGE_TAG }}
             ghcr.io/${{ steps.prep.outputs.OWNER_LOWERCASE }}/playground-${{ matrix.directory }}:latest
