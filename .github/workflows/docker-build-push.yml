@@ -17,6 +17,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Important: fetch full history for proper diff
 
       - name: Check changed directories
         id: filter
@@ -29,6 +31,12 @@ jobs:
               - 'Learn/week4/**'
             week5:
               - 'Learn/week5/**'
+      
+      - name: Debug outputs
+        run: |
+          echo "week3: ${{ steps.filter.outputs.week3 }}"
+          echo "week4: ${{ steps.filter.outputs.week4 }}"
+          echo "week5: ${{ steps.filter.outputs.week5 }}"
 
   build-week3:
     needs: prepare
