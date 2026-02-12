@@ -6,35 +6,18 @@ on:
       - 'Learn/week3/**'
       - 'Learn/week4/**'
       - 'Learn/week5/**'
-  workflow_dispatch:
-    inputs:
-      directory:
-        description: 'Select the directory (week) to build and push'
-        required: true
-        type: choice
-        options:
-          - week3
-          - week4
-          - week5
-          - all
-      image_tag:
-        description: 'Tag for the Docker image (e.g., v1.0, latest)'
-        required: true
-        default: 'latest'
-        type: string
 
 jobs:
   prepare:
     runs-on: ubuntu-latest
     outputs:
-      directories: ${{ steps.set-dirs.outputs.directories }}
+      directories: ${{ steps.filter.outputs.changes }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
       - name: Check changed directories
         id: filter
-        if: github.event_name == 'push'
         uses: dorny/paths-filter@v3
         with:
           filters: |
@@ -42,28 +25,9 @@ jobs:
             week4: 'Learn/week4/**'
             week5: 'Learn/week5/**'
 
-      - id: set-dirs
-        run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            if [ "${{ github.event.inputs.directory }}" = "all" ]; then
-              echo 'directories=["week3", "week4", "week5"]' >> $GITHUB_OUTPUT
-            else
-              echo 'directories=["${{ github.event.inputs.directory }}"]' >> $GITHUB_OUTPUT
-            fi
-          else
-            # For push events, build array based on filter results
-            DIRS=()
-            if [ "${{ steps.filter.outputs.week3 }}" = "true" ]; then DIRS+=("\"week3\""); fi
-            if [ "${{ steps.filter.outputs.week4 }}" = "true" ]; then DIRS+=("\"week4\""); fi
-            if [ "${{ steps.filter.outputs.week5 }}" = "true" ]; then DIRS+=("\"week5\""); fi
-            
-            # Join array with commas and wrap in brackets
-            JSON_DIRS=$(IFS=,; echo "[${DIRS[*]}]")
-            echo "directories=$JSON_DIRS" >> $GITHUB_OUTPUT
-          fi
-
   docker-build-push:
     needs: prepare
+    if: needs.prepare.outputs.directories != '[]'
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -90,11 +54,7 @@ jobs:
         id: prep
         run: |
           echo "OWNER_LOWERCASE=${GITHUB_REPOSITORY_OWNER,,}" >> $GITHUB_OUTPUT
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            echo "IMAGE_TAG=${{ github.event.inputs.image_tag }}" >> $GITHUB_OUTPUT
-          else
-            echo "IMAGE_TAG=${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
-          fi
+          echo "IMAGE_TAG=${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
 
       - name: Build and Push
         uses: docker/build-push-action@v6

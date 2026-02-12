@@ -15,7 +15,7 @@
 ```bash
 # Open your terminal/command prompt
 
-# Create a folder for your projects
+# Create a folder for your project
 mkdir my-first-api
 cd my-first-api
 ```

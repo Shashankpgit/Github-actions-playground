@@ -34,7 +34,7 @@ def get_users():
 ```
 GET /search?query=fastapi&limit=10
       ↑
-  All data is in URL - anyone can see it!
+  All data is in URL - anyone can see it! 
 ```
 
 #### POST Requests (New!)
