@@ -51,9 +51,19 @@ jobs:
 
       - name: Set lowercase owner
         if: ${{ github.event_name == 'push' || github.event.inputs.services == 'all' || contains(github.event.inputs.services, matrix.service.name) }}
-        run: echo "OWNER_LC=${OWNER,,}" >> $GITHUB_ENV
+        run: |
+          echo "OWNER_LC=${OWNER,,}" >> $GITHUB_ENV
         env:
           OWNER: ${{ github.repository_owner }}
+
+      - name: Docker meta
+        if: ${{ github.event_name == 'push' || github.event.inputs.services == 'all' || contains(github.event.inputs.services, matrix.service.name) }}
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ env.OWNER_LC }}/${{ matrix.service.name }}
+          tags: |
+            type=raw,value=latest
 
       - name: Set up Docker Buildx
         if: ${{ github.event_name == 'push' || github.event.inputs.services == 'all' || contains(github.event.inputs.services, matrix.service.name) }}
@@ -74,4 +84,5 @@ jobs:
           context: ${{ matrix.service.path }}
           platforms: linux/amd64
           push: true
-          tags: ghcr.io/${{ env.OWNER_LC }}/${{ matrix.service.name }}:latest
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
